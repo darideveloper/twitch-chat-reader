@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 0",
-    "start": "node app.js"
+    "start": "node app.js",
+    "build": "mkdir dist && cp -R node_modules app.js bot.js ... dist"
   },
   "author": "darideveloper",
   "license": "ISC",
