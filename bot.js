@@ -1,7 +1,6 @@
 const tmi = require('tmi.js')
-const axios = require('axios')
 
-const DURATION = 0.1
+const DURATION = process.env.DURATION
 
 module.exports = {
 

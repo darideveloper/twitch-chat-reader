@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express')
 const bot = require('./bot.js')
 const app = express()
