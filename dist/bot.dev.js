@@ -1,5 +1,7 @@
 "use strict";
 
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 var tmi = require('tmi.js');
 
 var axios = require('axios'); // Get enviroment variables
@@ -55,13 +57,13 @@ function onMessageHandler(target, context, comment, stream_id) {
 } // Called every time the bot connects to Twitch chat
 
 
-function onConnectedHandler(addr, port, username) {
-  console.log("* Connected to ".concat(addr, ":").concat(port));
+function onConnectedHandler(user_name) {
+  console.log("* Connected with user ".concat(user_name));
 }
 
 module.exports = {
-  read_chat: function read_chat(streams) {
-    var _iteratorNormalCompletion, _didIteratorError, _iteratorError, _loop, _iterator, _step;
+  read_chat: function read_chat(streams, live_streams) {
+    var _iteratorNormalCompletion, _didIteratorError, _iteratorError, _loop, _iterator, _step, _ret;
 
     return regeneratorRuntime.async(function read_chat$(_context4) {
       while (1) {
@@ -90,36 +92,56 @@ module.exports = {
                           password: "oauth:".concat(access_token)
                         },
                         channels: [user_name]
-                      };
-                      console.log("Current user: ".concat(user_name)); // Create a client with our options
+                      }; // Create a client with our options
 
                       client = new tmi.client(opts); // Register our event handlers (defined below)
 
-                      client.on('message', function _callee(target, context, msg, self) {
+                      client.on('message', function _callee() {
+                        var _len,
+                            _ref,
+                            _key,
+                            target,
+                            context,
+                            msg,
+                            _args2 = arguments;
+
                         return regeneratorRuntime.async(function _callee$(_context2) {
                           while (1) {
                             switch (_context2.prev = _context2.next) {
                               case 0:
+                                for (_len = _args2.length, _ref = new Array(_len), _key = 0; _key < _len; _key++) {
+                                  _ref[_key] = _args2[_key];
+                                }
+
+                                target = _ref.target, context = _ref.context, msg = _ref.msg;
                                 return _context2.abrupt("return", onMessageHandler(target, context, msg, stream_id));
 
-                              case 1:
+                              case 3:
                               case "end":
                                 return _context2.stop();
                             }
                           }
                         });
                       });
-                      client.on('connected', onConnectedHandler); // Connect to Twitch:
+                      client.on('connected', function () {
+                        return onConnectedHandler(user_name);
+                      }); // Connect to Twitch:
 
                       client.connect(); // Close connection after wait time
 
-                      _context3.next = 12;
+                      _context3.next = 11;
                       return regeneratorRuntime.awrap(sleep(DURATION * 60 * 1000));
 
-                    case 12:
+                    case 11:
                       client.disconnect();
+                      console.log("* Disonnected with user ".concat(user_name));
+                      return _context3.abrupt("return", {
+                        v: live_streams.filter(function (stream) {
+                          return stream != stream_id;
+                        })
+                      });
 
-                    case 13:
+                    case 14:
                     case "end":
                       return _context3.stop();
                   }
@@ -131,7 +153,7 @@ module.exports = {
 
           case 6:
             if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-              _context4.next = 12;
+              _context4.next = 15;
               break;
             }
 
@@ -139,49 +161,59 @@ module.exports = {
             return regeneratorRuntime.awrap(_loop());
 
           case 9:
+            _ret = _context4.sent;
+
+            if (!(_typeof(_ret) === "object")) {
+              _context4.next = 12;
+              break;
+            }
+
+            return _context4.abrupt("return", _ret.v);
+
+          case 12:
             _iteratorNormalCompletion = true;
             _context4.next = 6;
             break;
 
-          case 12:
-            _context4.next = 18;
+          case 15:
+            _context4.next = 21;
             break;
 
-          case 14:
-            _context4.prev = 14;
+          case 17:
+            _context4.prev = 17;
             _context4.t0 = _context4["catch"](3);
             _didIteratorError = true;
             _iteratorError = _context4.t0;
 
-          case 18:
-            _context4.prev = 18;
-            _context4.prev = 19;
+          case 21:
+            _context4.prev = 21;
+            _context4.prev = 22;
 
             if (!_iteratorNormalCompletion && _iterator["return"] != null) {
               _iterator["return"]();
             }
 
-          case 21:
-            _context4.prev = 21;
+          case 24:
+            _context4.prev = 24;
 
             if (!_didIteratorError) {
-              _context4.next = 24;
+              _context4.next = 27;
               break;
             }
 
             throw _iteratorError;
 
-          case 24:
+          case 27:
+            return _context4.finish(24);
+
+          case 28:
             return _context4.finish(21);
 
-          case 25:
-            return _context4.finish(18);
-
-          case 26:
+          case 29:
           case "end":
             return _context4.stop();
         }
       }
-    }, null, null, [[3, 14, 18, 26], [19,, 21, 25]]);
+    }, null, null, [[3, 17, 21, 29], [22,, 24, 28]]);
   }
 };

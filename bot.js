@@ -19,7 +19,7 @@ async function onMessageHandler(target, context, comment, stream_id) {
     const user_id = context["user-id"]
 
     // Send message to Django API
-    req = await axios.post (DJANGO_API, {user_id, stream_id, comment})
+    req = await axios.post(DJANGO_API, { user_id, stream_id, comment })
 
     // Validate if message was sent
     if (req.status == 200) {
@@ -31,19 +31,19 @@ async function onMessageHandler(target, context, comment, stream_id) {
 }
 
 // Called every time the bot connects to Twitch chat
-function onConnectedHandler(addr, port, username) {
-  console.log(`* Connected to ${addr}:${port}`)
+function onConnectedHandler(user_name) {
+  console.log(`* Connected with user ${user_name}`)
 }
 
 module.exports = {
-  read_chat: async function (streams) {
-  
+  read_chat: async function (streams, live_streams) {
+
     // Connect to each stream
     for (const stream of streams) {
       const user_name = stream.user_name
       const access_token = stream.access_token
       const stream_id = stream.stream_id
-  
+
       // Define configuration options
       const opts = {
         identity: {
@@ -54,22 +54,22 @@ module.exports = {
           user_name
         ]
       }
-  
-      console.log(`Current user: ${user_name}`)
-  
+
       // Create a client with our options
       const client = new tmi.client(opts)
-  
+
       // Register our event handlers (defined below)
-      client.on('message', async (target, context, msg, self) => onMessageHandler(target, context, msg, stream_id))
-      client.on('connected', onConnectedHandler)
-  
+      client.on('message', async (...{ target, context, msg }) => onMessageHandler(target, context, msg, stream_id))
+      client.on('connected', () => onConnectedHandler(user_name))
+
       // Connect to Twitch:
       client.connect()
-  
+
       // Close connection after wait time
       await sleep(DURATION * 60 * 1000)
       client.disconnect()
+      console.log(`* Disonnected with user ${user_name}`)
+      return live_streams.filter(stream => stream != stream_id)
     }
   }
 }
