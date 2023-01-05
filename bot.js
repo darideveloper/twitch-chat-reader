@@ -14,21 +14,21 @@ module.exports = {
   
     // Connect to each stream
     for (const stream of streams) {
-      const username = stream.username
-      const user_id = stream.user_id
+      const user_name = stream.user_name
+      const access_token = stream.access_token
   
       // Define configuration options
       const opts = {
         identity: {
-          username: username,
-          password: 'oauth:lt2xmd5scmnz8mfnt35vxqf9javag7'
+          username: user_name,
+          password: `oauth:${access_token}`
         },
         channels: [
-          username
+          user_name
         ]
       }
   
-      console.log(`Current user: ${username}`)
+      console.log(`Current user: ${user_name}`)
   
       // Create a client with our options
       const client = new tmi.client(opts)
@@ -50,7 +50,6 @@ module.exports = {
 
 // Called every time a message comes in
 function onMessageHandler(target, context, msg, self) {
-  if (self) { return } // Ignore messages from the bot
 
   // Get and validate message type
   if (context["message-type"] == "chat" || context["message-type"] == "whisper") {
