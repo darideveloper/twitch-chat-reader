@@ -1,0 +1,16 @@
+{
+  "name": "twitch_chat_reader",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js"
+  },
+  "author": "darideveloper",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.2.2",
+    "express": "^4.18.2"
+  }
+}
