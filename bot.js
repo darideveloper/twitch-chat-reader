@@ -59,7 +59,7 @@ module.exports = {
     const client = new tmi.client(opts)
 
     // Register our event handlers (defined below)
-    client.on('message', async (...{ target, context, msg }) => onMessageHandler(target, context, msg, stream_id))
+    client.on('message', async (target, context, msg) => onMessageHandler(target, context, msg, stream_id))
     client.on('connected', () => onConnectedHandler(user_name))
 
     try {

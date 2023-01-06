@@ -82,27 +82,14 @@ module.exports = {
 
             client = new tmi.client(opts); // Register our event handlers (defined below)
 
-            client.on('message', function _callee() {
-              var _len,
-                  _ref,
-                  _key,
-                  target,
-                  context,
-                  msg,
-                  _args2 = arguments;
-
+            client.on('message', function _callee(target, context, msg) {
               return regeneratorRuntime.async(function _callee$(_context2) {
                 while (1) {
                   switch (_context2.prev = _context2.next) {
                     case 0:
-                      for (_len = _args2.length, _ref = new Array(_len), _key = 0; _key < _len; _key++) {
-                        _ref[_key] = _args2[_key];
-                      }
-
-                      target = _ref.target, context = _ref.context, msg = _ref.msg;
                       return _context2.abrupt("return", onMessageHandler(target, context, msg, stream_id));
 
-                    case 3:
+                    case 1:
                     case "end":
                       return _context2.stop();
                   }
