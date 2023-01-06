@@ -29,9 +29,12 @@ app.post('/', (req, res) => {
   new_streams.map(stream => live_streams.push(stream.stream_id))
 
   // Start reading chat and update live streams after
-  bot.read_chat(new_streams, live_streams).then((updated_live_streams) => {
-    live_streams = updated_live_streams
-  })
+  for (const stream of new_streams) {
+    bot.read_chat(stream).then((res) => {
+      // Remove current stream from live streams
+      live_streams = live_streams.filter(stream => stream != stream.stream_id)
+    })
+  }
 
   res.send('done')
 })

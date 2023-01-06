@@ -3,7 +3,8 @@ const axios = require('axios')
 
 // Get enviroment variables
 const DURATION = process.env.DURATION
-const DJANGO_API = process.env.DJANGO_API
+const DJANGO_ADD_COMMENT = process.env.DJANGO_ADD_COMMENT
+const DJANGO_REFRESH_TOKEN = process.env.DJANGO_REFRESH_TOKEN
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
@@ -19,7 +20,7 @@ async function onMessageHandler(target, context, comment, stream_id) {
     const user_id = context["user-id"]
 
     // Send message to Django API
-    req = await axios.post(DJANGO_API, { user_id, stream_id, comment })
+    req = await axios.post(DJANGO_ADD_COMMENT, { user_id, stream_id, comment })
 
     // Validate if message was sent
     if (req.status == 200) {
@@ -36,40 +37,62 @@ function onConnectedHandler(user_name) {
 }
 
 module.exports = {
-  read_chat: async function (streams, live_streams) {
+  read_chat: async function (stream) {
 
-    // Connect to each stream
-    for (const stream of streams) {
-      const user_name = stream.user_name
-      const access_token = stream.access_token
-      const stream_id = stream.stream_id
+    // Connect to the stream
+    const user_name = stream.user_name
+    const access_token = stream.access_token
+    const stream_id = stream.stream_id
 
-      // Define configuration options
-      const opts = {
-        identity: {
-          username: user_name,
-          password: `oauth:${access_token}`
-        },
-        channels: [
-          user_name
-        ]
+    // Define configuration options
+    const opts = {
+      identity: {
+        username: user_name,
+        password: `oauth:${access_token}`
+      },
+      channels: [
+        user_name
+      ]
+    }
+
+    // Create a client with our options
+    const client = new tmi.client(opts)
+
+    // Register our event handlers (defined below)
+    client.on('message', async (...{ target, context, msg }) => onMessageHandler(target, context, msg, stream_id))
+    client.on('connected', () => onConnectedHandler(user_name))
+
+    try {
+      // Connect to Twitch:
+      await client.connect()
+    } catch (err) {
+
+      // Show connection error
+      console.log(`* Error connecting with user ${user_name}. Error: ${err}`)
+
+      // Catch refresh token error
+      if (err == "Login authentication failed") {
+        // Send flag to django for refresh token
+        console.log(`* Requesting refresh token for user ${user_name}...`)
+        req = await axios.post(DJANGO_REFRESH_TOKEN, { "expired_token": access_token })
+        await sleep(3000)
+        
+        // Catch error from django refresh token
+        if (req.status != 200) {
+          console.log (`* Error requesting refresh token for user ${user_name}. Error: ${req.body}`)
+        }
+
+        return "refresh token error"
       }
 
-      // Create a client with our options
-      const client = new tmi.client(opts)
+      // End function for uncatch error
+      return "unknown error"
+    } 
 
-      // Register our event handlers (defined below)
-      client.on('message', async (...{ target, context, msg }) => onMessageHandler(target, context, msg, stream_id))
-      client.on('connected', () => onConnectedHandler(user_name))
-
-      // Connect to Twitch:
-      client.connect()
-
-      // Close connection after wait time
-      await sleep(DURATION * 60 * 1000)
-      client.disconnect()
-      console.log(`* Disonnected with user ${user_name}`)
-      return live_streams.filter(stream => stream != stream_id)
-    }
+    // Close connection after wait time
+    console.log(`* Connected with user ${user_name}`)
+    await sleep(DURATION * 60 * 1000)
+    client.disconnect()
+    return "done"
   }
 }
