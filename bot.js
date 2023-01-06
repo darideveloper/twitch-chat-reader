@@ -20,14 +20,14 @@ async function onMessageHandler(target, context, comment, stream_id) {
     const user_id = context["user-id"]
 
     // Send message to Django API
-    req = await axios.post(DJANGO_ADD_COMMENT, { user_id, stream_id, comment })
-
-    // Validate if message was sent
-    if (req.status == 200) {
-      console.log(`target: ${target} - user: ${user_id} - message: ${comment}`)
-    } else {
-      console.log("Error sending message to Django API")
+    try {
+      req = await axios.post(DJANGO_ADD_COMMENT, { user_id, stream_id, comment })
+    } catch {
+      console.log(`target: ${target} - user: ${user_id} - message: ${comment} (received but no saved)`)
+      return ""
     }
+    
+    console.log(`target: ${target} - user: ${user_id} - message: ${comment}`)
   }
 }
 

@@ -23,36 +23,41 @@ function onMessageHandler(target, context, comment, stream_id) {
       switch (_context.prev = _context.next) {
         case 0:
           if (!(context["message-type"] == "chat" || context["message-type"] == "whisper")) {
-            _context.next = 6;
+            _context.next = 13;
             break;
           }
 
           // Get user id
           user_id = context["user-id"]; // Send message to Django API
 
-          _context.next = 4;
+          _context.prev = 2;
+          _context.next = 5;
           return regeneratorRuntime.awrap(axios.post(DJANGO_ADD_COMMENT, {
             user_id: user_id,
             stream_id: stream_id,
             comment: comment
           }));
 
-        case 4:
+        case 5:
           req = _context.sent;
+          _context.next = 12;
+          break;
 
-          // Validate if message was sent
-          if (req.status == 200) {
-            console.log("target: ".concat(target, " - user: ").concat(user_id, " - message: ").concat(comment));
-          } else {
-            console.log("Error sending message to Django API");
-          }
+        case 8:
+          _context.prev = 8;
+          _context.t0 = _context["catch"](2);
+          console.log("target: ".concat(target, " - user: ").concat(user_id, " - message: ").concat(comment, " (received but no saved)"));
+          return _context.abrupt("return", "");
 
-        case 6:
+        case 12:
+          console.log("target: ".concat(target, " - user: ").concat(user_id, " - message: ").concat(comment));
+
+        case 13:
         case "end":
           return _context.stop();
       }
     }
-  });
+  }, null, null, [[2, 8]]);
 } // Called every time the bot connects to Twitch chat
 
 
