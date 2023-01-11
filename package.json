@@ -5,11 +5,10 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 0",
-    "start": "node app.js",
-    "build": "mkdir dist && cp -R node_modules app.js bot.js ... dist"
+    "start": "node app.js"
   },
   "author": "darideveloper",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "axios": "^1.2.2",
     "dotenv": "^16.0.3",
@@ -17,6 +16,10 @@
     "tmi.js": "^1.8.5"
   },
   "engines": {
-    "node": ">=14"
+    "node": "16.x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/darideveloper/twitch-chat-reader"
   }
 }
