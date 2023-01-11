@@ -2,15 +2,18 @@ require('dotenv').config()
 const express = require('express')
 const bot = require('./bot.js')
 const app = express()
-const port = 3000
+const port = process.env.PORT || 5000
 
 // List of streams online
 let live_streams = []
 
 app.use(express.json())
 
-app.post('/', (req, res) => {
+app.get ('/', (req, res) => {
+  res.send('app running')
+})
 
+app.post('/', (req, res) => {
 
   if (Object.keys(req.body).length == 0) {
     res.status(400).send("streams are required")
@@ -41,7 +44,7 @@ app.post('/', (req, res) => {
       live_streams = live_streams.filter(stream => stream != stream.access_token)
     })
   }
-
+  
   res.send('done')
 })
 
