@@ -42,6 +42,7 @@ app.post('/', (req, res) => {
     bot.read_chat(stream).then((res) => {
       // Remove current stream from live streams
       live_streams = live_streams.filter(stream => stream != stream.access_token)
+      return "Thread end"
     })
   }
   

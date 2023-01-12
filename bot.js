@@ -74,23 +74,22 @@ module.exports = {
       if (err == "Login authentication failed") {
         // Send flag to django for refresh token
         console.log(`* Requesting refresh token for user ${user_name}...`)
-        req = await axios.post(DJANGO_REFRESH_TOKEN, { "expired_token": access_token })
-        await sleep(3000)
-        
-        // Catch error from django refresh token
-        if (req.status != 200) {
-          console.log (`* Error requesting refresh token for user ${user_name}. Error: ${req.body}`)
+        try {
+          req = await axios.post(DJANGO_REFRESH_TOKEN, { "stream_id": stream_id })
+        } catch {
+          console.log(`* Error updating token for user ${user_name}.`)
+          return "refresh token error"
         }
-
-        return "refresh token error"
+        await sleep(3000)
+      } else {
+        // End function for uncatch error
+        console.log (`* Unknown error for user ${user_name}.`)
+        return "unknown error"
       }
 
-      // End function for uncatch error
-      return "unknown error"
     } 
 
     // Close connection after wait time
-    console.log(`* Connected with user ${user_name}`)
     await sleep(DURATION * 60 * 1000)
     client.disconnect()
     return "done"
