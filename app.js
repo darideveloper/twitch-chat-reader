@@ -25,6 +25,7 @@ app.post('/', (req, res) => {
 
   // Filter only new streams
   const new_streams = streams.filter(stream => !live_streams.includes(stream.access_token))
+  console.log (`new streams: ${new_streams.map(stream => stream.user_name).join(",")}` )
 
   // Validate if there are streams
   if (new_streams.length == 0) {
@@ -41,7 +42,9 @@ app.post('/', (req, res) => {
   for (const stream of new_streams) {
     bot.read_chat(stream).then((res) => {
       // Remove current stream from live streams
-      live_streams = live_streams.filter(stream => stream != stream.access_token)
+      live_streams = live_streams.filter(current_stream => current_stream != stream.access_token)
+      console.log (`Stream ${stream.user_name} ended.`)
+      console.log (`live streams: ${live_streams.map(stream => stream.user_name).join(",")}` )
       return "Thread end"
     })
   }
