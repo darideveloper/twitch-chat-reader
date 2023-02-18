@@ -22,13 +22,10 @@ app.post('/', (req, res) => {
 
   // Get streams from json
   const streams = req.body.streams
-
-  // Filter only new streams
-  const new_streams = streams.filter(stream => !live_streams.includes(stream.access_token))
-  console.log (`new streams: ${new_streams.map(stream => stream.user_name).join(",")}` )
+  console.log (`streams: ${streams.map(stream => stream.user_name).join(",")}` )
 
   // Validate if there are streams
-  if (new_streams.length == 0) {
+  if (streams.length == 0) {
     message = "no new streams"
     console.log(message)
     res.send(message)
@@ -36,10 +33,10 @@ app.post('/', (req, res) => {
   }
 
   // Upate live streams
-  new_streams.map(stream => live_streams.push(stream.access_token))
+  streams.map(stream => live_streams.push(stream.access_token))
 
   // Start reading chat and update live streams after
-  for (const stream of new_streams) {
+  for (const stream of streams) {
     bot.read_chat(stream).then((res) => {
       // Remove current stream from live streams
       live_streams = live_streams.filter(current_stream => current_stream != stream.access_token)
