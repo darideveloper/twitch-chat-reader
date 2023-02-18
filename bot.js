@@ -2,7 +2,7 @@ const tmi = require('tmi.js')
 const axios = require('axios')
 
 // Get enviroment variables
-const DURATION = process.env.DURATION
+const END_MINUTE = process.env.END_MINUTE
 const DJANGO_ADD_COMMENT = process.env.DJANGO_ADD_COMMENT
 const DJANGO_REFRESH_TOKEN = process.env.DJANGO_REFRESH_TOKEN
 
@@ -89,8 +89,14 @@ module.exports = {
 
     } 
 
+    // Calculate minutes to end time
+    const now_date = new Date()
+    const end_date = new Date(now_date.getFullYear(), now_date.getMonth(), now_date.getDate(), now_date.getHours(), END_MINUTE, 0, 0)
+    minutes = (end_date - now_date) / 1000 / 60
+    console.log (`Thread will end in ${parseInt(minutes)} minutes.`)
+
     // Close connection after wait time
-    await sleep(DURATION * 60 * 1000)
+    await sleep(minutes * 60 * 1000)
     client.disconnect()
     return "done"
   }

@@ -5,7 +5,7 @@ const app = express()
 const port = process.env.PORT || 5000
 
 // List of streams online
-let live_streams = []
+let live_streams = {}
 
 app.use(express.json())
 
@@ -32,10 +32,7 @@ app.post('/', (req, res) => {
     return ""
   }
 
-  // Upate live streams
-  streams.map(stream => live_streams.push(stream.access_token))
-
-  // Start reading chat and update live streams after
+  // Loop each stream
   for (const stream of streams) {
     bot.read_chat(stream).then((res) => {
       // Remove current stream from live streams
