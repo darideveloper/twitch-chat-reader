@@ -22,8 +22,8 @@ async function onMessageHandler(target, context, comment, stream_id) {
     // Send message to Django API
     try {
       req = await axios.post(DJANGO_ADD_COMMENT, { user_id, stream_id, comment })
-    } catch {
-      console.log(`target: ${target} - user: ${user_id} - message: ${comment} (received but no saved)`)
+    } catch (error) {
+      console.log(`target: ${target} - user: ${user_id} - message: ${comment} (received but no saved: ${error})`)
       return ""
     }
     
