@@ -11,7 +11,7 @@ function sleep(ms) {
 }
 
 // Called every time a message comes in
-async function onMessageHandler(target, context, comment, stream_id) {
+function onMessageHandler(target, context, comment, stream_id) {
 
   // Get and validate message type
   if (context["message-type"] == "chat" || context["message-type"] == "whisper") {
@@ -20,14 +20,13 @@ async function onMessageHandler(target, context, comment, stream_id) {
     const user_id = context["user-id"]
 
     // Send message to Django API
-    try {
-      req = await axios.post(DJANGO_ADD_COMMENT, { user_id, stream_id, comment })
-    } catch (error) {
-      console.log(`target: ${target} - user: ${user_id} - message: ${comment} (received but no saved: ${error})`)
-      return ""
-    }
-    
-    console.log(`target: ${target} - user: ${user_id} - message: ${comment}`)
+    axios.post(DJANGO_ADD_COMMENT, { user_id, stream_id, comment })
+    .then(() => {
+      console.log(`target: ${target} - user: ${user_id} - message: ${comment}`)
+    })
+    .catch((err) => {
+      console.log(`target: ${target} - user: ${user_id} - message: ${comment} (received but no saved: ${err})`)
+    })
   }
 }
 
@@ -59,7 +58,7 @@ module.exports = {
     const client = new tmi.client(opts)
 
     // Register our event handlers (defined below)
-    client.on('message', async (target, context, msg) => onMessageHandler(target, context, msg, stream_id))
+    client.on('message', (target, context, msg) => onMessageHandler(target, context, msg, stream_id))
     client.on('connected', () => onConnectedHandler(user_name))
 
     try {
