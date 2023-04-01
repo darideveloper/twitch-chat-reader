@@ -25,7 +25,11 @@ function onMessageHandler(target, context, comment, stream_id) {
       console.log(`target: ${target} - user: ${user_id} - message: ${comment}`)
     })
     .catch((err) => {
-      console.log(`target: ${target} - user: ${user_id} - message: ${comment} (received but no saved: ${err})`)
+      if (err.response) {
+        console.log(`target: ${target} - user: ${user_id} - message: ${comment} (received but no saved: ${err.response.data})`)
+      } else {
+        console.log(`target: ${target} - user: ${user_id} - message: ${comment} (received but no saved: ${err})`)
+      }
     })
   }
 }
