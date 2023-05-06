@@ -1,12 +1,12 @@
 const tmi = require('tmi.js')
 const dotenv = require("dotenv")
-const { Client } = require('pg')
+const { Pool } = require('pg')
 
 // Load crdentials from .env
 dotenv.config()
 
 // Database options
-const client = new Client({
+const pool = new Pool({
   user: process.env.PGUSER,
   host: process.env.PGHOST,
   database: process.env.PGDATABASE,
@@ -14,10 +14,10 @@ const client = new Client({
   port: process.env.PGPORT,
   idleTimeoutMillis: 10000,
   connectionTimeoutMillis: 10000,
+  max: 50,
   ssl: {
     rejectUnauthorized: false
   },
-  keepAlive: true
 })
 
 // Connect to DB
@@ -47,9 +47,8 @@ async function onMessageHandler(target, context, comment, stream_id) {
 
   try {
 
-    // Connect to DB and validate connection
-    await client.connect()
-    let res = await client.query('select count (id) from app_comment')
+    // Validate connection
+    let res = await pool.query('select count (id) from app_comment')
     
     // Save comment in DB
     const now = new Date()
@@ -60,10 +59,7 @@ async function onMessageHandler(target, context, comment, stream_id) {
       datetime, comment, stream_id, user_id, status_id)
       VALUES ('${now_iso}', '${comment}', ${stream_id}, ${user_id}, 1);
     `
-    res = await client.query(query)
-
-    // Close connection
-    await client.end()
+    res = await pool.query(query)
 
     // Show details
     console.log(`[${now_iso}] ${target} - ${context.username}: ${comment}`)
@@ -72,9 +68,7 @@ async function onMessageHandler(target, context, comment, stream_id) {
     // Show error
     console.log ("ERROR CONNECTING TO DB")
     console.log(error)
-  }
-
-  
+  }  
 }
 
 // Called every time the bot connects to Twitch chat
