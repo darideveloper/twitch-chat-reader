@@ -38,28 +38,43 @@ function sleep(ms) {
 async function onMessageHandler(target, context, comment, stream_id) {
 
   // Get and validate message type
-  if (context["message-type"] == "chat" || context["message-type"] == "whisper") {
-
-    // Get user id
-    const user_id = context["user-id"]
-
-    try {
-      await client.connect()
-      const res = await client.query('select count (id) from app_comment')
-      console.log ("CONNECTED TO DB")
-      await client.end()
-    } catch (error) {
-      console.log ("ERROR CONNECTING TO DB")
-      console.log(error)
-    }
+  if (! (context["message-type"] == "chat" || context["message-type"] == "whisper")) {
+    return null
   }
 
-  query = `
-  INSERT INTO app_comment(
-    datetime, comment, stream_id, user_id, status_id)
-    VALUES (?, ?, ?, ${user_id}, 1);
-  `
-  console.log (query)
+  // Get user id
+  const user_id = context["user-id"]
+
+  try {
+
+    // Connect to DB and validate connection
+    await client.connect()
+    let res = await client.query('select count (id) from app_comment')
+    
+    // Save comment in DB
+    const now = new Date()
+    const now_iso = now.toISOString()
+    
+    query = `
+    INSERT INTO app_comment(
+      datetime, comment, stream_id, user_id, status_id)
+      VALUES ('${now_iso}', '${comment}', ${stream_id}, ${user_id}, 1);
+    `
+    res = await client.query(query)
+
+    // Close connection
+    await client.end()
+
+    // Show details
+    console.log(`[${now_iso}] ${target} - ${context.username}: ${comment}`)
+
+  } catch (error) {
+    // Show error
+    console.log ("ERROR CONNECTING TO DB")
+    console.log(error)
+  }
+
+  
 }
 
 // Called every time the bot connects to Twitch chat
