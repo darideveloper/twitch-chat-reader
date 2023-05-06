@@ -1,17 +1,41 @@
 const tmi = require('tmi.js')
-const axios = require('axios')
+const dotenv = require("dotenv")
+const { Client } = require('pg')
+
+// Load crdentials from .env
+dotenv.config()
+
+// Database options
+const client = new Client({
+  user: process.env.PGUSER,
+  host: process.env.PGHOST,
+  database: process.env.PGDATABASE,
+  password: process.env.PGPASSWORD,
+  port: process.env.PGPORT,
+  idleTimeoutMillis: 10000,
+  connectionTimeoutMillis: 10000,
+  ssl: {
+    rejectUnauthorized: false
+  },
+  keepAlive: true
+})
+
+// Connect to DB
+const connectDb = async () => {
+  
+}
+
+connectDb ()
 
 // Get enviroment variables
 const END_MINUTE = process.env.END_MINUTE
-const DJANGO_ADD_COMMENT = process.env.DJANGO_ADD_COMMENT
-const DJANGO_REFRESH_TOKEN = process.env.DJANGO_REFRESH_TOKEN
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 // Called every time a message comes in
-function onMessageHandler(target, context, comment, stream_id) {
+async function onMessageHandler(target, context, comment, stream_id) {
 
   // Get and validate message type
   if (context["message-type"] == "chat" || context["message-type"] == "whisper") {
@@ -19,19 +43,23 @@ function onMessageHandler(target, context, comment, stream_id) {
     // Get user id
     const user_id = context["user-id"]
 
-    // Send message to Django API
-    axios.post(DJANGO_ADD_COMMENT, { user_id, stream_id, comment })
-    .then(() => {
-      console.log(`target: ${target} - user: ${user_id} - message: ${comment}`)
-    })
-    .catch((err) => {
-      if (err.response) {
-        console.log(`target: ${target} - user: ${user_id} - message: ${comment} (received but no saved: ${err.response.data})`)
-      } else {
-        console.log(`target: ${target} - user: ${user_id} - message: ${comment} (received but no saved: ${err})`)
-      }
-    })
+    try {
+      await client.connect()
+      const res = await client.query('select count (id) from app_comment')
+      console.log ("CONNECTED TO DB")
+      await client.end()
+    } catch (error) {
+      console.log ("ERROR CONNECTING TO DB")
+      console.log(error)
+    }
   }
+
+  query = `
+  INSERT INTO app_comment(
+    datetime, comment, stream_id, user_id, status_id)
+    VALUES (?, ?, ?, ${user_id}, 1);
+  `
+  console.log (query)
 }
 
 // Called every time the bot connects to Twitch chat
@@ -73,14 +101,14 @@ module.exports = {
       // Show connection error
       console.log(`* Error connecting with user ${user_name}. Error: ${err}`)
       return "Error connecting with user"
-    } 
+    }
 
     // Calculate minutes to end time
     const now_date = new Date()
     // const end_date = new Date(now_date.getFullYear(), now_date.getMonth(), now_date.getDate(), now_date.getHours() + 1, END_MINUTE, 0, 0)
     const end_date = new Date(now_date.getFullYear(), now_date.getMonth(), now_date.getDate(), now_date.getHours(), END_MINUTE, 0, 0)
     minutes = (end_date - now_date) / 1000 / 60
-    console.log (`Thread will end in ${parseInt(minutes)} minutes.`)
+    console.log(`Thread will end in ${parseInt(minutes)} minutes.`)
 
     // Close connection after wait time
     await sleep(minutes * 60 * 1000)
