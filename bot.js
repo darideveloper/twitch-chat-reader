@@ -53,7 +53,10 @@ async function onMessageHandler(target, context, comment, stream_id) {
     // Save comment in DB
     const now = new Date()
     const now_iso = now.toISOString()
-    
+
+    // Clean comment
+    comment = comment.replace("'", "").replace('"', '').replace(';', '').replace ('`', '').replace ('\\', '').replace ('/', '').replace ('%', '').replace ('&', '').replace ('<', '').replace ('>', '').replace ('=', '').replace ('+', '').replace ('-', '').replace ('_', '').replace ('*', '').replace ('#', '').replace ('@', '') 
+  
     query = `
     INSERT INTO app_comment(
       datetime, comment, stream_id, user_id, status_id)
