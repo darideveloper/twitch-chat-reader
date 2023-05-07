@@ -47,16 +47,21 @@ async function onMessageHandler(target, context, comment, stream_id) {
 
   try {
 
-    // Validate connection
-    let res = await pool.query('select count (id) from app_comment')
-    
-    // Save comment in DB
+    // Get current date
     const now = new Date()
     const now_iso = now.toISOString()
 
+    // Check if user is exists in DB
+    let res = await pool.query(`SELECT id FROM app_user WHERE id = ${user_id}`)
+    if (res.rows.length == 0) {
+      console.log(`[${now_iso}] ${target} - ${context.username}: (skipped) ${comment}`)
+      return null
+    }
+    
     // Clean comment
     comment = comment.replace("'", "").replace('"', '').replace(';', '').replace ('`', '').replace ('\\', '').replace ('/', '').replace ('%', '').replace ('&', '').replace ('<', '').replace ('>', '').replace ('=', '').replace ('+', '').replace ('-', '').replace ('_', '').replace ('*', '').replace ('#', '').replace ('@', '') 
-  
+    
+    // Save comment in DB
     query = `
     INSERT INTO app_comment(
       datetime, comment, stream_id, user_id, status_id)
