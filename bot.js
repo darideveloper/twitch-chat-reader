@@ -51,10 +51,32 @@ async function onMessageHandler(target, context, comment, stream_id) {
     const now = new Date()
     const now_iso = now.toISOString()
 
+    // Check if is not a streamer comment
+    if (context.username == target.trim().replace('#', '')) {
+      console.log(`[${now_iso}] ${target} - ${context.username}: (skipped: streamer comment) ${comment}`)
+      return null
+    }
+
     // Check if user is exists in DB
     let res = await pool.query(`SELECT id FROM app_user WHERE id = ${user_id}`)
     if (res.rows.length == 0) {
-      console.log(`[${now_iso}] ${target} - ${context.username}: (skipped) ${comment}`)
+      console.log(`[${now_iso}] ${target} - ${context.username}: (skipped: user not registered) ${comment}`)
+      return null
+    }
+
+    sql = `
+    SELECT id
+    FROM app_generalpoint
+    WHERE 
+      stream_id = ${stream_id}
+      AND
+      user_id = ${user_id}
+      AND 
+      amount >= 1
+      `
+    res = await pool.query(sql)
+    if (res.rows.length > 0) {
+      console.log(`[${now_iso}] ${target} - ${context.username}: (skipped: user already have a point) ${comment}`)
       return null
     }
     
