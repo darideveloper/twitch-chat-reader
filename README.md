@@ -1,5 +1,5 @@
-<div><a href='https://github.com/github.com/darideveloper/blob/master/LICENSE' target='_blank'>
-            <img src='https://img.shields.io/github/license/github.com/darideveloper.svg?style=for-the-badge' alt='MIT License' height='30px'/>
+<div><a href='https://github.com/darideveloper/twitch-chat-reader/blob/master/LICENSE' target='_blank'>
+            <img src='https://img.shields.io/github/license/darideveloper/twitch-chat-reader.svg?style=for-the-badge' alt='MIT License' height='30px'/>
         </a><a href='https://www.linkedin.com/in/francisco-dari-hernandez-6456b6181/' target='_blank'>
                 <img src='https://img.shields.io/static/v1?style=for-the-badge&message=LinkedIn&color=0A66C2&logo=LinkedIn&logoColor=FFFFFF&label=' alt='Linkedin' height='30px'/>
             </a><a href='https://t.me/darideveloper' target='_blank'>
@@ -18,11 +18,7 @@
 
 Service for read stream comments and save in database
 
-Start date: **2023-01-04**
-
-Last update: **2023-05-11**
-
-Project type: **personal's project**
+Project type: **personal**
 
 </div><br><details>
             <summary>Table of Contents</summary>
@@ -64,5 +60,4 @@ Coming soon...
 - [x] Save new comments
 - [x] Create logs
 - [x] Running time from settings
-
 
