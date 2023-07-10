@@ -58,7 +58,7 @@ async function onMessageHandler(target, context, comment, stream_id) {
 
   } catch (error) {
     // Save error
-    saveLog (`${target} - ${context.username}: error saving comment: ${error} ${comment}`, true)
+    saveLog (`${target} - ${context.username}: error saving comment: ${error} (${comment})`, true)
     pool.query(query)
   }  
 }
