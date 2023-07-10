@@ -1,7 +1,9 @@
-require('dotenv').config()
 const express = require('express')
 const bot = require('./bot.js')
+const { saveLog } = require('./logs')
 const app = express()
+
+require('dotenv').config()
 const port = process.env.PORT || 5000
 
 app.use(express.json())
@@ -19,12 +21,12 @@ app.post('/', (req, res) => {
 
   // Get streams from json
   const streams = req.body.streams
-  console.log (`streams: ${streams.map(stream => stream.user_name).join(",")}` )
+  saveLog (`streams: ${streams.map(stream => stream.user_name).join(",")}` )
 
   // Validate if there are streams
   if (streams.length == 0) {
     message = "no new streams"
-    console.log(message)
+    saveLog(message)
     res.send(message)
     return ""
   }
@@ -33,7 +35,7 @@ app.post('/', (req, res) => {
   for (const stream of streams) {
     bot.read_chat(stream).then((res) => {
       // Remove current stream from live streams
-      console.log (`Stream ${stream.user_name} ended.`)
+      saveLog (`Stream ${stream.user_name} ended.`)
       return "Thread end"
     })
   }
@@ -42,5 +44,5 @@ app.post('/', (req, res) => {
 })
 
 app.listen(port, () => {
-  console.log(`Listening on port ${port}`)
+  saveLog(`Listening on port ${port}`)
 })

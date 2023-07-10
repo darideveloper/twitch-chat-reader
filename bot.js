@@ -1,31 +1,6 @@
 const tmi = require('tmi.js')
-const dotenv = require("dotenv")
-const { Pool } = require('pg')
-
-// Load crdentials from .env
-dotenv.config()
-
-// Database options
-const pool = new Pool({
-  user: process.env.PGUSER,
-  host: process.env.PGHOST,
-  database: process.env.PGDATABASE,
-  password: process.env.PGPASSWORD,
-  port: process.env.PGPORT,
-  idleTimeoutMillis: 10000,
-  connectionTimeoutMillis: 10000,
-  max: 50,
-  ssl: {
-    rejectUnauthorized: false
-  },
-})
-
-// Connect to DB
-const connectDb = async () => {
-  
-}
-
-connectDb ()
+const { saveLog } = require('./logs')
+const { pool } = require('./db')
 
 // Get enviroment variables
 const END_MINUTE = process.env.END_MINUTE
@@ -37,13 +12,17 @@ function sleep(ms) {
 // Called every time a message comes in
 async function onMessageHandler(target, context, comment, stream_id) {
 
+  let query = ""
+  const user_id = context["user-id"]
+  const message_type = context["message-type"]
+
   // Get and validate message type
-  if (! (context["message-type"] == "chat" || context["message-type"] == "whisper")) {
+  if (! (message_type == "chat" || message_type == "whisper")) {
+
+    // Save register of skipped message
+    saveLog (`${target} - ${context.username}: (skipped: message type) ${comment}`)
     return null
   }
-
-  // Get user id
-  const user_id = context["user-id"]
 
   try {
 
@@ -53,18 +32,18 @@ async function onMessageHandler(target, context, comment, stream_id) {
 
     // Check if is not a streamer comment
     if (context.username == target.trim().replace('#', '')) {
-      console.log(`[${now_iso}] ${target} - ${context.username}: (skipped: streamer comment) ${comment}`)
+      saveLog (`${target} - ${context.username}: (skipped: streamer comment) ${comment}`)
       return null
     }
 
     // Check if user is exists in DB
     let res = await pool.query(`SELECT id FROM app_user WHERE id = ${user_id}`)
     if (res.rows.length == 0) {
-      console.log(`[${now_iso}] ${target} - ${context.username}: (skipped: user not registered) ${comment}`)
+      saveLog (`${target} - ${context.username}: (skipped: user not registered) ${comment}`)
       return null
     }
 
-    sql = `
+    query = `
     SELECT id
     FROM app_generalpoint
     WHERE 
@@ -74,9 +53,9 @@ async function onMessageHandler(target, context, comment, stream_id) {
       AND 
       amount >= 1
       `
-    res = await pool.query(sql)
+    res = await pool.query(query)
     if (res.rows.length > 0) {
-      console.log(`[${now_iso}] ${target} - ${context.username}: (skipped: user already have a point) ${comment}`)
+      saveLog (`${target} - ${context.username}: (skipped: user already have a point) ${comment}`)
       return null
     }
     
@@ -91,19 +70,18 @@ async function onMessageHandler(target, context, comment, stream_id) {
     `
     res = await pool.query(query)
 
-    // Show details
-    console.log(`[${now_iso}] ${target} - ${context.username}: ${comment}`)
+    saveLog (`${target} - ${context.username}: ${comment}`)
 
   } catch (error) {
-    // Show error
-    console.log ("ERROR CONNECTING TO DB")
-    console.log(error)
+    // Save error
+    saveLog (`${target} - ${context.username}: error saving comment: ${error} ${comment}`, true)
+    pool.query(query)
   }  
 }
 
 // Called every time the bot connects to Twitch chat
 function onConnectedHandler(user_name) {
-  console.log(`* Connected with user ${user_name}`)
+  saveLog (`* Connected with user ${user_name}`)
 }
 
 module.exports = {
@@ -138,7 +116,7 @@ module.exports = {
     } catch (err) {
 
       // Show connection error
-      console.log(`* Error connecting with user ${user_name}. Error: ${err}`)
+      saveLog (`Error connecting with user ${user_name}: ${err}`, true)
       return "Error connecting with user"
     }
 
@@ -147,7 +125,6 @@ module.exports = {
     // const end_date = new Date(now_date.getFullYear(), now_date.getMonth(), now_date.getDate(), now_date.getHours() + 1, END_MINUTE, 0, 0)
     const end_date = new Date(now_date.getFullYear(), now_date.getMonth(), now_date.getDate(), now_date.getHours(), END_MINUTE, 0, 0)
     minutes = (end_date - now_date) / 1000 / 60
-    console.log(`Thread will end in ${parseInt(minutes)} minutes.`)
 
     // Close connection after wait time
     await sleep(minutes * 60 * 1000)
