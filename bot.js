@@ -108,7 +108,14 @@ module.exports = {
     const now_date = new Date()
     // const end_date = new Date(now_date.getFullYear(), now_date.getMonth(), now_date.getDate(), now_date.getHours() + 1, END_MINUTE, 0, 0)
     const end_date = new Date(now_date.getFullYear(), now_date.getMonth(), now_date.getDate(), now_date.getHours(), END_MINUTE, 0, 0)
-    minutes = (end_date - now_date) / 1000 / 60
+    const minutes = int((end_date - now_date) / 1000 / 60)
+
+    // Get hours as HH:MM
+    const now_time = `${now_date.getHours()}:${now_date.getMinutes()}`
+    const end_time = `${end_date.getHours()}:${end_date.getMinutes()}`
+
+    // Log times
+    saveLog (`* ${user_name} - starting: ${now_time} - ending: ${end_time} - minutes: ${minutes}`)
 
     // Close connection after wait time
     await sleep(minutes * 60 * 1000)
