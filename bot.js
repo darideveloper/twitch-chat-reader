@@ -108,7 +108,7 @@ module.exports = {
     const now_date = new Date()
     // const end_date = new Date(now_date.getFullYear(), now_date.getMonth(), now_date.getDate(), now_date.getHours() + 1, END_MINUTE, 0, 0)
     const end_date = new Date(now_date.getFullYear(), now_date.getMonth(), now_date.getDate(), now_date.getHours(), END_MINUTE, 0, 0)
-    const minutes = int((end_date - now_date) / 1000 / 60)
+    const minutes = parseInt((end_date - now_date) / 1000 / 60)
 
     // Get hours as HH:MM
     const now_time = `${now_date.getHours()}:${now_date.getMinutes()}`
