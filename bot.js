@@ -42,22 +42,6 @@ async function onMessageHandler(target, context, comment, stream_id) {
       saveLog (`${target} - ${context.username}: (skipped: user not registered) ${comment}`)
       return null
     }
-
-    query = `
-    SELECT id
-    FROM app_generalpoint
-    WHERE 
-      stream_id = ${stream_id}
-      AND
-      user_id = ${user_id}
-      AND 
-      amount >= 1
-      `
-    res = await pool.query(query)
-    if (res.rows.length > 0) {
-      saveLog (`${target} - ${context.username}: (skipped: user already have a point) ${comment}`)
-      return null
-    }
     
     // Clean comment
     comment = comment.replace("'", "").replace('"', '').replace(';', '').replace ('`', '').replace ('\\', '').replace ('/', '').replace ('%', '').replace ('&', '').replace ('<', '').replace ('>', '').replace ('=', '').replace ('+', '').replace ('-', '').replace ('_', '').replace ('*', '').replace ('#', '').replace ('@', '') 
