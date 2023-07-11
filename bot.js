@@ -17,10 +17,10 @@ async function onMessageHandler(target, context, comment, stream_id) {
   const message_type = context["message-type"]
 
   // Get and validate message type
-  if (! (message_type == "chat" || message_type == "whisper")) {
+  if (!(message_type == "chat" || message_type == "whisper")) {
 
     // Save register of skipped message
-    saveLog (`${target} - ${context.username}: (skipped: message type) ${comment}`)
+    saveLog(`${target} - ${context.username}: (skipped: message type) ${comment}`)
     return null
   }
 
@@ -32,20 +32,20 @@ async function onMessageHandler(target, context, comment, stream_id) {
 
     // Check if is not a streamer comment
     if (context.username == target.trim().replace('#', '')) {
-      saveLog (`${target} - ${context.username}: (skipped: streamer comment) ${comment}`)
+      saveLog(`${target} - ${context.username}: (skipped: streamer comment) ${comment}`)
       return null
     }
 
     // Check if user is exists in DB
     let res = await pool.query(`SELECT id FROM app_user WHERE id = ${user_id}`)
     if (res.rows.length == 0) {
-      saveLog (`${target} - ${context.username}: (skipped: user not registered) ${comment}`)
+      saveLog(`${target} - ${context.username}: (skipped: user not registered) ${comment}`)
       return null
     }
-    
+
     // Clean comment
-    comment = comment.replace("'", "").replace('"', '').replace(';', '').replace ('`', '').replace ('\\', '').replace ('/', '').replace ('%', '').replace ('&', '').replace ('<', '').replace ('>', '').replace ('=', '').replace ('+', '').replace ('-', '').replace ('_', '').replace ('*', '').replace ('#', '').replace ('@', '') 
-    
+    comment = comment.replace("'", "").replace('"', '').replace(';', '').replace('`', '').replace('\\', '').replace('/', '').replace('%', '').replace('&', '').replace('<', '').replace('>', '').replace('=', '').replace('+', '').replace('-', '').replace('_', '').replace('*', '').replace('#', '').replace('@', '')
+
     // Save comment in DB
     query = `
     INSERT INTO app_comment(
@@ -54,17 +54,25 @@ async function onMessageHandler(target, context, comment, stream_id) {
     `
     res = await pool.query(query)
 
-    saveLog (`${target} - ${context.username}: ${comment}`)
+    saveLog(`${target} - ${context.username}: ${comment}`)
 
   } catch (error) {
-    // Save error
-    saveLog (`${target} - ${context.username}: error saving comment: ${error} (${comment})`, true)
-  }  
+
+    // Check is stream is still live
+    res = await pool.query(`SELECT id FROM app_stream WHERE id = ${stream_id}`)
+    if (res.rows.length == 0) {
+      saveLog(`${target} - ${context.username}: (skipped: stream ended) ${comment}`)
+      return null
+    } else {
+      // Save error
+      saveLog(`${target} - ${context.username}: error saving comment: ${error} (${comment})`, true)
+    }
+  }
 }
 
 // Called every time the bot connects to Twitch chat
 function onConnectedHandler(user_name) {
-  saveLog (`* Connected with user ${user_name}`)
+  saveLog(`* Connected with user ${user_name}`)
 }
 
 module.exports = {
@@ -99,7 +107,7 @@ module.exports = {
     } catch (err) {
 
       // Show connection error
-      saveLog (`Error connecting with user ${user_name}: ${err}`, true)
+      saveLog(`Error connecting with user ${user_name}: ${err}`, true)
       return "Error connecting with user"
     }
 
@@ -114,7 +122,7 @@ module.exports = {
     const end_time = `${end_date.getHours()}:${end_date.getMinutes()}`
 
     // Log times
-    saveLog (`* ${user_name} - starting: ${now_time} - ending: ${end_time} - minutes: ${minutes}`)
+    saveLog(`* ${user_name} - starting: ${now_time} - ending: ${end_time} - minutes: ${minutes}`)
 
     // Close connection after wait time
     await sleep(minutes * 60 * 1000)
