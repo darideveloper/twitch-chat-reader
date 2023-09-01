@@ -10,6 +10,9 @@ module.exports = {
     // Get current datetime
     const now = new Date()
 
+    // Clean details text
+    details = details.replace("'", "").replace('"', '').replace(';', '').replace('`', '').replace('\\', '').replace('/', '').replace('%', '').replace('&', '').replace('<', '').replace('>', '').replace('=', '').replace('+', '').replace('-', '').replace('_', '').replace('*', '').replace('#', '').replace('@', '')
+
     // Save log to db
     const query = `INSERT INTO public.app_log(
       origin_id, details, log_type_id, datetime)
