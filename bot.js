@@ -1,6 +1,5 @@
 const tmi = require('tmi.js')
 const { saveLog } = require('./logs')
-const { pool } = require('./db')
 
 // Get enviroment variables
 const END_MINUTE = process.env.END_MINUTE
@@ -10,7 +9,7 @@ function sleep(ms) {
 }
 
 // Called every time a message comes in
-async function onMessageHandler(target, context, comment, stream_id) {
+async function onMessageHandler(target, context, comment, stream_id, pool) {
 
   let query = ""
   const user_id = context["user-id"]
@@ -76,7 +75,7 @@ function onConnectedHandler(user_name) {
 }
 
 module.exports = {
-  read_chat: async function (stream) {
+  read_chat: async function (stream, pool) {
 
     // Connect to the stream
     const user_name = stream.user_name
@@ -98,7 +97,7 @@ module.exports = {
     const client = new tmi.client(opts)
 
     // Register our event handlers (defined below)
-    client.on('message', (target, context, msg) => onMessageHandler(target, context, msg, stream_id))
+    client.on('message', (target, context, msg) => onMessageHandler(target, context, msg, stream_id, pool))
     client.on('connected', () => onConnectedHandler(user_name))
 
     try {
@@ -107,7 +106,7 @@ module.exports = {
     } catch (err) {
 
       // Show connection error
-      saveLog(`Error connecting with user ${user_name}: ${err}`, true)
+      saveLog(`Error connecting with user ${user_name}: ${err}`, true, pool)
       return "Error connecting with user"
     }
 

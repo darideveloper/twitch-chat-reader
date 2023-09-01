@@ -2,6 +2,7 @@ const express = require('express')
 const bot = require('./bot.js')
 const { saveLog } = require('./logs')
 const app = express()
+const { getPool } = require('./db')
 
 require('dotenv').config()
 const port = process.env.PORT || 5000
@@ -44,7 +45,8 @@ app.post('/', (req, res) => {
     current_streams.push(stream.user_name)
 
     // Start chat reader
-    bot.read_chat(stream).then((res) => {
+    const pool = getPool()
+    bot.read_chat(stream, pool).then((res) => {
 
       // Remove current stream from live streams
       saveLog (`Stream ${stream.user_name} ended.`)

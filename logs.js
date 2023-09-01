@@ -1,7 +1,5 @@
-const { pool } = require('./db')
-
 module.exports = {
-  saveLog: function (details, isError = false) {
+  saveLog: function (details, isError = false, pool) {
 
     // Log to console
     const logTypeText = isError ? "error" : "info"
