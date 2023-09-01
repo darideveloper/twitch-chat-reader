@@ -2,6 +2,7 @@ const tmi = require('tmi.js')
 const { saveLog } = require('./logs')
 
 // Get enviroment variables
+require('dotenv').config()
 const END_MINUTE = process.env.END_MINUTE
 
 function sleep(ms) {
@@ -19,7 +20,7 @@ async function onMessageHandler(target, context, comment, stream_id, pool) {
   if (!(message_type == "chat" || message_type == "whisper")) {
 
     // Save register of skipped message
-    saveLog(`${target} - ${context.username}: (skipped: message type) ${comment}`)
+    saveLog(`${target} - ${context.username}: (skipped: message type) ${comment}`, pool)
     return null
   }
 
@@ -31,14 +32,14 @@ async function onMessageHandler(target, context, comment, stream_id, pool) {
 
     // Check if is not a streamer comment
     if (context.username == target.trim().replace('#', '')) {
-      saveLog(`${target} - ${context.username}: (skipped: streamer comment) ${comment}`)
+      saveLog(`${target} - ${context.username}: (skipped: streamer comment) ${comment}`, pool)
       return null
     }
 
     // Check if user is exists in DB
     let res = await pool.query(`SELECT id FROM app_user WHERE id = ${user_id}`)
     if (res.rows.length == 0) {
-      saveLog(`${target} - ${context.username}: (skipped: user not registered) ${comment}`)
+      saveLog(`${target} - ${context.username}: (skipped: user not registered) ${comment}`, pool)
       return null
     }
 
@@ -53,25 +54,25 @@ async function onMessageHandler(target, context, comment, stream_id, pool) {
     `
     res = await pool.query(query)
 
-    saveLog(`${target} - ${context.username}: ${comment}`)
+    saveLog(`${target} - ${context.username}: ${comment}`, pool)
 
   } catch (error) {
 
     // Check is stream is still live
     res = await pool.query(`SELECT id FROM app_stream WHERE id = ${stream_id}`)
     if (res.rows.length == 0) {
-      saveLog(`${target} - ${context.username}: (skipped: stream ended) ${comment}`)
+      saveLog(`${target} - ${context.username}: (skipped: stream ended) ${comment}`, pool)
       return null
     } else {
       // Save error
-      saveLog(`${target} - ${context.username}: error saving comment: ${error} (${comment})`, true)
+      saveLog(`${target} - ${context.username}: error saving comment: ${error} (${comment})`, pool, true)
     }
   }
 }
 
 // Called every time the bot connects to Twitch chat
-function onConnectedHandler(user_name) {
-  saveLog(`* Connected with user ${user_name}`)
+function onConnectedHandler(user_name, pool) {
+  saveLog(`* Connected with user ${user_name}`, pool)
 }
 
 module.exports = {
@@ -98,7 +99,7 @@ module.exports = {
 
     // Register our event handlers (defined below)
     client.on('message', (target, context, msg) => onMessageHandler(target, context, msg, stream_id, pool))
-    client.on('connected', () => onConnectedHandler(user_name))
+    client.on('connected', () => onConnectedHandler(user_name, pool))
 
     try {
       // Connect to Twitch:
@@ -106,13 +107,13 @@ module.exports = {
     } catch (err) {
 
       // Show connection error
-      saveLog(`Error connecting with user ${user_name}: ${err}`, true, pool)
+      saveLog(`Error connecting with user ${user_name}: ${err}`, pool, true)
       return "Error connecting with user"
     }
 
     // Calculate minutes to end time
     const now_date = new Date()
-    // const end_date = new Date(now_date.getFullYear(), now_date.getMonth(), now_date.getDate(), now_date.getHours() + 1, END_MINUTE, 0, 0)
+    // Change minuto of end_date to END_MINUTE
     const end_date = new Date(now_date.getFullYear(), now_date.getMonth(), now_date.getDate(), now_date.getHours(), END_MINUTE, 0, 0)
     const minutes = parseInt((end_date - now_date) / 1000 / 60)
 
@@ -121,7 +122,7 @@ module.exports = {
     const end_time = `${end_date.getHours()}:${end_date.getMinutes()}`
 
     // Log times
-    saveLog(`* ${user_name} - starting: ${now_time} - ending: ${end_time} - minutes: ${minutes}`)
+    saveLog(`* ${user_name} - starting: ${now_time} - ending: ${end_time} - minutes: ${minutes}`, pool)
 
     // Close connection after wait time
     await sleep(minutes * 60 * 1000)

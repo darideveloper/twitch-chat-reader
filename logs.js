@@ -1,5 +1,5 @@
 module.exports = {
-  saveLog: function (details, isError = false, pool) {
+  saveLog: function (details, pool, isError = false) {
 
     // Log to console
     const logTypeText = isError ? "error" : "info"
