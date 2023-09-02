@@ -19,7 +19,7 @@ async function onMessageHandler(target, context, comment, stream_id, pool) {
   if (!(message_type == "chat" || message_type == "whisper")) {
 
     // Save register of skipped message
-    console.log(`${target} - ${context.username}: (skipped: message type) ${comment}`)
+    // console.log(`${target} - ${context.username}: (skipped: message type) ${comment}`)
     return null
   }
 
@@ -31,7 +31,6 @@ async function onMessageHandler(target, context, comment, stream_id, pool) {
 
     // Check if is not a streamer comment
     if (context.username == target.trim().replace('#', '')) {
-      console.log(`${target} - ${context.username}: (skipped: streamer comment) ${comment}`)
       return null
     }
 
@@ -56,16 +55,7 @@ async function onMessageHandler(target, context, comment, stream_id, pool) {
     console.log(`${target} - ${context.username}: ${comment}`)
 
   } catch (error) {
-
-    // Check is stream is still live
-    res = await pool.query(`SELECT id FROM app_stream WHERE id = ${stream_id}`)
-    if (res.rows.length == 0) {
-      console.log(`${target} - ${context.username}: (skipped: stream ended) ${comment}`)
-      return null
-    } else {
-      // Save error
-      console.error(`${target} - ${context.username}: error saving comment: ${error} (${comment})`)
-    }
+    console.error(`${target} - ${context.username}: error saving comment: ${error} (${comment})`)
   }
 }
 
