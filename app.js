@@ -1,6 +1,5 @@
 const express = require('express')
 const bot = require('./bot.js')
-const { saveLog } = require('./logs')
 const app = express()
 const { getPool } = require('./db')
 
@@ -31,12 +30,12 @@ app.post('/', (req, res) => {
 
   // Get streams from json
   const streams = req.body.streams
-  saveLog (`streams: ${streams.map(stream => stream.user_name).join(",")}`, pool)
+  console.log (`streams: ${streams.map(stream => stream.user_name).join(",")}`)
 
   // Validate if there are streams
   if (streams.length == 0) {
     message = "no new streams"
-    saveLog(message, pool)
+    console.log(message)
     res.send(message)
     return ""
   }
@@ -56,7 +55,7 @@ app.post('/', (req, res) => {
     bot.read_chat(stream, pool).then((res) => {
 
       // Remove current stream from live streams
-      saveLog (`Stream ${stream.user_name} ended.`, pool)
+      console.log (`Stream ${stream.user_name} ended.`)
 
       // Remove current stream from live streams
       current_streams = current_streams.filter(item => item !== stream.user_name)
@@ -70,5 +69,5 @@ app.post('/', (req, res) => {
 
 app.listen(port, () => {
   const pool = getPool()
-  saveLog(`Listening on port ${port}`, pool)
+  console.log(`Listening on port ${port}`)
 })
