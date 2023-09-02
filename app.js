@@ -68,6 +68,5 @@ app.post('/', (req, res) => {
 })
 
 app.listen(port, () => {
-  const pool = getPool()
   console.log(`Listening on port ${port}`)
 })

@@ -23,38 +23,36 @@ async function onMessageHandler(target, context, comment, stream_id, pool, users
     return null
   }
 
-  try {
+  // Get current date
+  const now = new Date()
+  const now_iso = now.toISOString()
 
-    // Get current date
-    const now = new Date()
-    const now_iso = now.toISOString()
+  // Check if is not a streamer comment
+  if (context.username == target.trim().replace('#', '')) {
+    return null
+  }
 
-    // Check if is not a streamer comment
-    if (context.username == target.trim().replace('#', '')) {
-      return null
-    }
+  // Check if user is exists in DB
+  if (!users_ids.includes(parseInt(user_id))) {
+    return null
+  }
 
-    // Check if user is exists in DB
-    if (!users_ids.includes(parseInt(user_id))) {
-      return null
-    }
+  // Clean comment
+  comment = comment.replace("'", "").replace('"', '').replace(';', '').replace('`', '').replace('\\', '').replace('/', '').replace('%', '').replace('&', '').replace('<', '').replace('>', '').replace('=', '').replace('+', '').replace('-', '').replace('_', '').replace('*', '').replace('#', '').replace('@', '')
 
-    // Clean comment
-    comment = comment.replace("'", "").replace('"', '').replace(';', '').replace('`', '').replace('\\', '').replace('/', '').replace('%', '').replace('&', '').replace('<', '').replace('>', '').replace('=', '').replace('+', '').replace('-', '').replace('_', '').replace('*', '').replace('#', '').replace('@', '')
-
-    // Save comment in DB
-    query = `
+  // Save comment in DB
+  query = `
     INSERT INTO app_comment(
       datetime, comment, stream_id, user_id, status_id)
       VALUES ('${now_iso}', '${comment}', ${stream_id}, ${user_id}, 1);
     `
-    res = await pool.query(query)
-
-    console.log(`${target} - ${context.username}: ${comment}`)
-
-  } catch (error) {
-    console.error(`${target} - ${context.username}: error saving comment: ${error} (${comment})`)
-  }
+  res = pool.query(query)
+    .then(() => {
+      console.log(`${target} - ${context.username}: ${comment}`)
+    })
+    .catch(error => {
+      console.error(`${target} - ${context.username}: error saving comment: ${error} (${comment})`)
+    })
 }
 
 // Called every time the bot connects to Twitch chat
