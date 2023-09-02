@@ -9,7 +9,7 @@ function sleep(ms) {
 }
 
 // Called every time a message comes in
-async function onMessageHandler(target, context, comment, stream_id, pool) {
+async function onMessageHandler(target, context, comment, stream_id, pool, users_ids) {
 
   let query = ""
   const user_id = context["user-id"]
@@ -35,9 +35,7 @@ async function onMessageHandler(target, context, comment, stream_id, pool) {
     }
 
     // Check if user is exists in DB
-    let res = await pool.query(`SELECT id FROM app_user WHERE id = ${user_id}`)
-    if (res.rows.length == 0) {
-      console.log(`${target} - ${context.username}: (skipped: user not registered) ${comment}`)
+    if (!users_ids.includes(parseInt(user_id))) {
       return null
     }
 
@@ -86,8 +84,12 @@ module.exports = {
     // Create a client with our options
     const client = new tmi.client(opts)
 
+    // Get users ids from db
+    query = `select id from app_user where is_active = true`
+    users_ids = (await pool.query(query)).rows.map(user => user.id)
+
     // Register our event handlers (defined below)
-    client.on('message', (target, context, msg) => onMessageHandler(target, context, msg, stream_id, pool))
+    client.on('message', (target, context, msg) => onMessageHandler(target, context, msg, stream_id, pool, users_ids))
     client.on('connected', () => onConnectedHandler(user_name, pool))
 
     try {
