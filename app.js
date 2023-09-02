@@ -44,6 +44,11 @@ app.post('/', (req, res) => {
   // Loop each stream
   for (const stream of streams) {
 
+    // Ignore current streams
+    if (current_streams.includes(stream.user_name)) {
+      continue
+    }
+
     // Save current stream
     current_streams.push(stream.user_name)
 
